@@ -1,0 +1,26 @@
+[
+    {
+        "fullname": "Admin Admin",
+        "username": "admin",
+        "password": "$2b$10$1SghoPEEeiUiJztapjothO14Y8hC/MFQFXkXrpUgNkhdUDah5tK1m",
+        "isAdmin": true
+    },
+    {
+        "fullname": "Ori Sason",
+        "username": "ori",
+        "password": "$2b$10$1SghoPEEeiUiJztapjothO14Y8hC/MFQFXkXrpUgNkhdUDah5tK1m",
+        "isAdmin": false
+    },
+    {
+        "fullname": "Vicky Polatov",
+        "username": "vicky",
+        "password": "$2b$10$1SghoPEEeiUiJztapjothO14Y8hC/MFQFXkXrpUgNkhdUDah5tK1m",
+        "isAdmin": false
+    },
+    {
+        "fullname": "Alex Yakovlev",
+        "username": "alex",
+        "password": "$2b$10$1SghoPEEeiUiJztapjothO14Y8hC/MFQFXkXrpUgNkhdUDah5tK1m",
+        "isAdmin": false
+    }
+]

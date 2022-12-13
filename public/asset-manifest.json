@@ -1,0 +1,28 @@
+{
+  "files": {
+    "main.css": "/static/css/main.e5c21ee3.css",
+    "main.js": "/static/js/main.c13d215d.js",
+    "static/js/787.9ae91dc5.chunk.js": "/static/js/787.9ae91dc5.chunk.js",
+    "static/media/Lobster-Regular.ttf": "/static/media/Lobster-Regular.03c38496322925fec242.ttf",
+    "static/media/Roboto-Regular.ttf": "/static/media/Roboto-Regular.fc2b5060f7accec5cf74.ttf",
+    "service-worker.js": "/service-worker.js",
+    "static/media/blue-robot.png": "/static/media/blue-robot.e6cc76596d019e8ed261.png",
+    "static/media/logo.png": "/static/media/logo.c8ab646508819fb08884.png",
+    "static/media/admin.png": "/static/media/admin.325385ce3e9c43f75f05.png",
+    "static/media/default-robot.png": "/static/media/default-robot.f131e8b6f7222aecdbfa.png",
+    "static/media/chat-color.png": "/static/media/chat-color.85bbd497a4022422e650.png",
+    "static/media/star-full2.png": "/static/media/star-full2.6f55a71772e1acfd9520.png",
+    "static/media/chat-black-and-white.png": "/static/media/chat-black-and-white.1287fee45e6986024d99.png",
+    "static/media/star-empty.png": "/static/media/star-empty.190d870d386afd29523a.png",
+    "static/media/out-of-stock.png": "/static/media/out-of-stock.c21b0deb0a0dc87b4a9f.png",
+    "static/media/star-full.png": "/static/media/star-full.d0cbd94e0a4a62fc2bf4.png",
+    "index.html": "/index.html",
+    "main.e5c21ee3.css.map": "/static/css/main.e5c21ee3.css.map",
+    "main.c13d215d.js.map": "/static/js/main.c13d215d.js.map",
+    "787.9ae91dc5.chunk.js.map": "/static/js/787.9ae91dc5.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.e5c21ee3.css",
+    "static/js/main.c13d215d.js"
+  ]
+}
