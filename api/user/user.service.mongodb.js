@@ -21,7 +21,7 @@ async function query() {
         let users = await collection.find().toArray()
         users = users.map(user => {
             delete user.password
-            // user.createdAt = ObjectId(user._id).getTimestamp()
+            user.createdAt = ObjectId(user._id).getTimestamp()
             return user
         })
         return users
