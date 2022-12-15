@@ -1,4 +1,4 @@
-const { ObjectId } = require('mongodb')
+const ObjectId = require('mongodb').ObjectId
 const dbService = require('../../services/mongodb.service')
 const alsService = require('../../services/als.service')
 
@@ -66,13 +66,6 @@ async function query(filterBy) {
         console.log('err', err)
         throw err
     }
-}
-
-function _buildCriteria(filterBy) {
-    const criteria = {}
-    if (filterBy.byUserId) criteria.userId = ObjectId(filterBy.byUserId)
-    if (filterBy.byRobotId) criteria.robotId = ObjectId(filterBy.byRobotId)
-    return criteria
 }
 
 async function getById(reviewId) {
@@ -146,4 +139,11 @@ async function remove(reviewId) {
         console.log('err', err)
         throw err
     }
+}
+
+function _buildCriteria(filterBy) {
+    const criteria = {}
+    if (filterBy.byUserId) criteria.userId = ObjectId(filterBy.byUserId)
+    if (filterBy.byRobotId) criteria.robotId = ObjectId(filterBy.byRobotId)
+    return criteria
 }

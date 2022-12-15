@@ -16,8 +16,6 @@ async function getCollection(collectionName) {
         const collection = await db.collection(collectionName)
         return collection
     } catch (err) {
-        /* FIX - should I import logger? */
-        // logger.error('Failed to get Mongo collection', err)
         throw err
     }
 }
@@ -28,8 +26,6 @@ async function _connect() {
         const client = await MongoClient.connect(config.dbURLMongo, { useNewUrlParser: true, useUnifiedTopology: true })
         return client.db(dbName)
     } catch (err) {
-        /* FIX - should I import logger? */
-        // logger.error('Cannot connect to DB', err)
         throw err
     }
 }

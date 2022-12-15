@@ -26,38 +26,26 @@ async function query(filterBy) {
 
     const criteria = {}
     const { name, labels, inStock, owner, sortBy } = filterBy
-
     if (name) {
         const regex = new RegExp(name, 'i')
         criteria.name = { $regex: regex }
     }
-
     if (inStock !== undefined && inStock !== 'all') {
         criteria.inStock = inStock === 'true'
     }
-
     if (labels && labels.length > 0) {
         criteria.labels = { $in: labels } //in creates an OR query. At least one elements has to be in database array
         // criteria.labels = { $all: labels } //in creates an AND query. All the elements has to be in database array
     }
-
     if (owner) {
         criteria['owner._id'] = ObjectId(JSON.parse(owner)._id)
     }
-
     try {
         const collection = await dbService.getCollection(COLLECTION_NAME)
         let robots = await collection.find(criteria)
         if (sortBy) robots.collation({ locale: 'en' }).sort({ [sortBy]: 1 }) //collation make it case insensitive
 
         robots = await robots.toArray()
-
-        /* Since I created fake createdAt times, I don't use these lines. It's here as a reference  */
-        // toys = toys.map(toy => {
-        //     toy.createdAt = ObjectId(toy._id).getTimestamp()
-        //     return toy
-        // })
-
 
         let pageIdx = +filterBy.pageIdx
         const numOfPages = Math.ceil(robots.length / PAGE_SIZE)
@@ -81,10 +69,6 @@ async function getById(robotId) {
     try {
         const collection = await dbService.getCollection(COLLECTION_NAME)
         const robot = collection.findOne({ _id: ObjectId(robotId) })
-
-        /* Since I created fake createdAt times, I don't use these lines. It's here as a reference  */
-        // robot.createdAt = ObjectId(robot._id).getTimestamp()
-
         return robot
     } catch (err) {
         console.log(`ERROR: cannot find robot ${robotId} (robot.service - getById)`)
@@ -197,7 +181,6 @@ async function getStatistics() {
         robots.reduce((acc, robot) => {
             if (robot.price > acc.mostExpensive.price) acc.mostExpensive = robot
             if (robot.price < acc.leastExpensive.price) acc.leastExpensive = robot
-
 
             //labels
             robot.labels.forEach(label => {
