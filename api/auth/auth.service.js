@@ -3,6 +3,7 @@ const cryptr = new Cryptr(process.env.SECRET1 || 'Secret-Rob-123')
 
 const bcrypt = require('bcrypt')
 const userService = require('../user/user.service.mongodb')
+// const userService = require('../user/user.service.sql')
 
 module.exports = {
     login,
@@ -18,6 +19,7 @@ async function login(username, password) {
         
         const match = await bcrypt.compare(password, user.password)
         if (!match) return Promise.reject('Invalid username or password')
+
         delete user.password
         return user
     } catch (err) {
@@ -29,11 +31,12 @@ async function login(username, password) {
 
 async function signup(username, password, fullname) {
     if (!username || !password || !fullname) return Promise.reject('fullname, username and password are required!')
+
     try {
-        const saltRounds = 10
         const user = await userService.getByUsername(username)
         if (user) return Promise.reject('Username already taken')
-        
+
+        const saltRounds = 10
         const hash = await bcrypt.hash(password, saltRounds)
         return userService.add({ username, password: hash, fullname })
     } catch (err) {

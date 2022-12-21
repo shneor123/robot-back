@@ -1,83 +1,91 @@
-const userService = require('./user.service.mongodb')
-// const userService = require('./user.service.sql')
+const robotService = require('./robot.service.mongodb')
+// const robotService = require('./robot.service.sql')
+// const logger = require('../../services/logger.service')
 
 module.exports = {
-    getUsers,
-    getUserById,
-    addUser,
-    updateUser,
-    updateUserAdmin,
-    removeUser
+    getLabels,
+    getRobots,
+    getRobotById,
+    addRobot,
+    updateRobot,
+    removeRobot,
+    getRobotStatistics
 }
 
-async function getUsers(req, res) {
+async function getLabels(req, res) {
     try {
-        /* FIX - add filterBy if needed */
-        const users = await userService.query()
-        if (!users) return res.status(401).send('Failed to get users')
-        res.send(users)
+        const labels = await robotService.getLabels()
+        res.send(labels)
     } catch (err) {
-        // logger.error('Failed to get users', err)
-        res.status(500).send({ err: 'Failed to get users' })
+        // logger.error('Failed to get labels', err)
+        res.status(500).send({ err: 'Failed to get labels' })
     }
 }
 
-async function getUserById(req, res) {
+async function getRobots(req, res) {
     try {
-        const { userId } = req.params
-        const user = await userService.getById(userId)
-        if (!user) return res.status(401).send('Failed to get user')
-        res.send(user)
+        const filterBy = req.query
+        const robots = await robotService.query(filterBy || '{}')
+        res.send(robots)
     } catch (err) {
-        // logger.error('Failed to get user', err)
-        res.status(500).send({ err: 'Failed to get user' })
+        console.log('err', err)
+        // logger.error('Failed to get robots', err)
+        res.status(500).send({ err: 'Failed to get robots' })
     }
 }
 
-async function addUser(req, res) {
+async function getRobotById(req, res) {
     try {
-        const user = req.body
-        const savedUser = await userService.add(user)
-        if (!savedUser) return res.status(401).send('Failed to add user')
-        res.send(savedUser)
+        const robot = await robotService.getById(req.params.robotId)
+        if (!robot) return res.status(401).send('Failed to get robot')
+        res.send(robot)
     } catch (err) {
-        // logger.error('Failed to add user', err)
-        res.status(500).send({ err: 'Failed to add user' })
+        // logger.error('Failed to get robot', err)
+        res.status(500).send({ err: 'Failed to get robot' })
     }
 }
 
-async function updateUser(req, res) {
+async function addRobot(req, res) {
     try {
-        const user = req.body
-        const savedUser = await userService.update(user)
-        if (!savedUser) return res.status(401).send('Failed to update user')
-        res.send(savedUser)
+        const robot = req.body        
+        const savedRobot = await robotService.add(robot)
+        if (!savedRobot) return res.status(401).send('Failed to add robot')
+        res.send(savedRobot)
     } catch (err) {
-        // logger.error('Failed to update user', err)
-        res.status(500).send({ err: 'Failed to update user' })
+        // logger.error('Failed to add robot', err)
+        res.status(500).send({ err: 'Failed to add robot' })
     }
 }
 
-async function updateUserAdmin(req, res) {
+async function updateRobot(req, res) {
     try {
-        const user = req.body
-        const savedUser = await userService.updateAdmin(user)
-        if (!savedUser) return res.status(401).send('Failed to update user admin mode')
-        res.send(savedUser)
+        const robot = req.body
+        const savedRobot = await robotService.update(robot)
+        if (!savedRobot) return res.status(401).send('Failed to update robot')
+        res.send(savedRobot)
     } catch (err) {
-        // logger.error('Failed to update user admin mode', err)
-        res.status(500).send({ err: 'Failed to update user admin mode' })
+        // logger.error('Failed to update robot', err)
+        res.status(500).send({ err: 'Failed to update robot' })
     }
 }
 
-async function removeUser(req, res) {
+async function removeRobot(req, res) {
     try {
-        const { userId } = req.params
-        const deletedCount = await userService.remove(userId)
-        if (!deletedCount) return res.status(401).send('Failed to remove user')
-        res.send('user removed successfully')
+        const deletedCount = await robotService.remove(req.params.robotId)
+        if (!deletedCount) return res.status(401).send('Failed to remove robot')
+        res.send('robot removed successfully')
     } catch (err) {
-        // logger.error('Failed to remove user', err)
-        res.status(500).send({ err: 'Failed to remove user ' })
+        // logger.error('Failed to remove robot', err)
+        res.status(500).send({ err: 'Failed to remove robot' })
+    }
+}
+
+async function getRobotStatistics(req, res) {
+    try {
+        const statistics = await robotService.getStatistics()
+        res.send(statistics)
+    } catch (err) {
+        // logger.error('Failed to remove robot', err)
+        res.status(500).send({ err: 'Failed getting robot statistics' })
     }
 }
