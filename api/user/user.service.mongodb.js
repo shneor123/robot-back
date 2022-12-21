@@ -1,255 +1,140 @@
+const { ObjectId } = require('mongodb')
+const bcrypt = require('bcrypt')
 const dbService = require('../../services/mongodb.service')
-const alsService = require('../../services/als.service')
-const ObjectId = require('mongodb').ObjectId
 
-const gLabels = ["On wheels", "Box game", "Art", "Baby", "Doll", "Puzzle", "Outdoor"]
-
-const COLLECTION_NAME = 'robot'
-const PAGE_SIZE = 9
+const COLLECTION_NAME = 'user'
 
 module.exports = {
-    getLabels,
     query,
     getById,
+    getByUsername,
     add,
     update,
-    remove,
-    addToChat,
-    getStatistics
+    updateAdmin,
+    remove
 }
 
-function getLabels() {
-    return Promise.resolve(gLabels.sort())
+async function query() {
+    try {
+        /* FIX - add filterBy if needed */
+        const collection = await dbService.getCollection(COLLECTION_NAME)
+        let users = await collection.find().toArray()
+        users = users.map(user => {
+            delete user.password
+            user.createdAt = ObjectId(user._id).getTimestamp()
+            return user
+        })
+        return users
+    } catch (err) {
+        console.log(`ERROR: cannot find users (user.service - query)`)
+        console.log('err', err)
+        // logger.error(`cannot find users`, err)
+        throw err
+    }
 }
 
-async function query(filterBy) {
-
-    const criteria = {}
-    const { name, labels, inStock, owner, sortBy } = filterBy
-
-    if (name) {
-        const regex = new RegExp(name, 'i')
-        criteria.name = { $regex: regex }
-    }
-
-    if (inStock !== undefined && inStock !== 'all') {
-        criteria.inStock = inStock === 'true'
-    }
-
-    if (labels && labels.length > 0) {
-        criteria.labels = { $in: labels } //in creates an OR query. At least one elements has to be in database array
-        // criteria.labels = { $all: labels } //in creates an AND query. All the elements has to be in database array
-    }
-
-    if (owner) {
-        criteria['owner._id'] = ObjectId(JSON.parse(owner)._id)
-    }
-
+async function getById(userId) {
     try {
         const collection = await dbService.getCollection(COLLECTION_NAME)
-        let robots = await collection.find(criteria)
-        if (sortBy) robots.collation({ locale: 'en' }).sort({ [sortBy]: 1 }) //collation make it case insensitive
-
-        robots = await robots.toArray()
-
-        /* Since I created fake createdAt times, I don't use these lines. It's here as a reference  */
-        // toys = toys.map(toy => {
-        //     toy.createdAt = ObjectId(toy._id).getTimestamp()
-        //     return toy
-        // })
-
-
-        let pageIdx = +filterBy.pageIdx
-        const numOfPages = Math.ceil(robots.length / PAGE_SIZE)
-
-        if (pageIdx < 0) pageIdx = numOfPages
-        else if (pageIdx > numOfPages - 1) pageIdx = 0
-        filterBy = { ...filterBy, pageIdx, numOfPages }
-
-        robots = robots.slice(PAGE_SIZE * pageIdx, PAGE_SIZE * (pageIdx + 1))
-
-        return { robots, filterBy }
-
+        const user = collection.findOne({ _id: ObjectId(userId) })
+        delete user.password
+        return user
     } catch (err) {
-        console.log(`ERROR: cannot find robots (robot.service - query)`)
+        console.log(`ERROR: cannot find user ${userId} (user.service - getById)`)
         console.log('err', err)
         throw err
     }
 }
 
-async function getById(robotId) {
+async function getByUsername(username) {
     try {
         const collection = await dbService.getCollection(COLLECTION_NAME)
-        const robot = collection.findOne({ _id: ObjectId(robotId) })
-
-        /* Since I created fake createdAt times, I don't use these lines. It's here as a reference  */
-        // robot.createdAt = ObjectId(robot._id).getTimestamp()
-
-        return robot
+        const user = await collection.findOne({ username })
+        return user
     } catch (err) {
-        console.log(`ERROR: cannot find robot ${robotId} (robot.service - getById)`)
+        console.log(`ERROR: cannot find user ${username} (user.service - getByUsername)`)
+        console.log('err', err)
         throw err
     }
 }
 
-async function add(robot) {
+async function add(user) {
     try {
-        const { loggedInUser } = alsService.getStore()
-        const collection = await dbService.getCollection(COLLECTION_NAME)
-
-        const newRobot = {
-            name: robot.name,
-            img: robot.img,
-            price: robot.price,
-            labels: robot.labels,
-            inStock: robot.inStock,
-            owner: {
-                _id: ObjectId(loggedInUser._id),
-                fullname: loggedInUser.fullname
-            },
-            createdAt: Date.now(),
+        const newUser = {
+            username: user.username,
+            password: user.password,
+            fullname: user.fullname,
+            isAdmin: false
         }
-
-        const res = await collection.insertOne(newRobot)
+        const collection = await dbService.getCollection(COLLECTION_NAME)
+        const res = await collection.insertOne(newUser)
         if (!res.insertedId) return null //will cause error 401
-        newRobot._id = res.insertedId
-        return newRobot
+        newUser._id = res.insertedId
+        return newUser
     } catch (err) {
-        console.log('ERROR: cannot add robot (robot.service - add)')
+        console.log(`ERROR: cannot add user (user.service - add)`)
+        console.log('err', err)
         throw err
     }
 }
 
-async function update(robot) {
+async function update(user) {
     try {
-        const criteria = { _id: ObjectId(robot._id) }
-        const { loggedInUser } = alsService.getStore()
-        //only the owner of the robot, or admin, can update the robot
-        if (!loggedInUser.isAdmin) criteria['owner._id'] = ObjectId(loggedInUser._id)
-
-        const collection = await dbService.getCollection(COLLECTION_NAME)
         const lastModified = Date.now()
 
-        const res = await collection.updateOne(
-            criteria,
-            {
-                $set: {
-                    name: robot.name,
-                    img: robot.img,
-                    price: robot.price,
-                    labels: robot.labels,
-                    inStock: robot.inStock,
-                    lastModified
-                }
-            }
-        )
+        const updatedUser = {
+            _id: ObjectId(user._id),
+            username: user.username,
+            fullname: user.fullname,
+            lastModified
+        }
 
+        if (user.newPassword) {
+            const saltRounds = 10
+            const hash = await bcrypt.hash(user.newPassword, saltRounds)
+            updatedUser.password = hash
+        }
+
+        const collection = await dbService.getCollection(COLLECTION_NAME)
+        const res = await collection.updateOne({ _id: updatedUser._id }, { $set: updatedUser })
         if (!res.modifiedCount) return null //will cause error 401
-        return { ...robot, lastModified }
+        delete user.password
+        return { ...user, lastModified }
     } catch (err) {
-        console.log(`ERROR: cannot update robot ${robot._id} (robot.service - update)`)
+        console.log(`ERROR: cannot update user (user.service - update)`)
+        console.log('err', err)
         throw err
     }
 }
 
-async function remove(robotId) {
+async function updateAdmin(user) {
     try {
-        const criteria = { _id: ObjectId(robotId) }
-        const { loggedInUser } = alsService.getStore()
-        //only the owner of the robot, or admin, can remove the robot
-        if (!loggedInUser.isAdmin) criteria['owner._id'] = ObjectId(loggedInUser._id)
+        const lastModified = Date.now()
+
+        const updatedUser = {
+            _id: ObjectId(user._id),
+            isAdmin: user.isAdmin,
+            lastModified
+        }
 
         const collection = await dbService.getCollection(COLLECTION_NAME)
-        const { deletedCount } = await collection.deleteOne(criteria)
+        const res = await collection.updateOne({ _id: updatedUser._id }, { $set: updatedUser })
+        if (!res.acknowledged) return null //will cause error 401
+        return { ...user, lastModified }
+    } catch (err) {
+        console.log(`ERROR: cannot update user admin mode (user.service - updateAdmin)`)
+        console.log('err', err)
+        throw err
+    }
+}
+
+async function remove(userId) {
+    try {
+        const collection = await dbService.getCollection(COLLECTION_NAME)
+        const deletedCount = await collection.deleteOne({ _id: ObjectId(userId) })
         return deletedCount
     } catch (err) {
-        console.log(`ERROR: cannot remove robot ${robot._id}`)
-        throw err
-    }
-}
-
-async function addToChat(robotId, msg) {
-    try {
-        const collection = await dbService.getCollection(COLLECTION_NAME)
-        await collection.updateOne({ _id: ObjectId(robotId) }, { $push: { chat: msg } })
-    } catch (err) {
-        console.log(`ERROR: cannot add to chat of robot ${robotId} (robot.service - remove)`)
-        throw err
-    }
-}
-
-async function getStatistics() {
-    try {
-        const collection = await dbService.getCollection(COLLECTION_NAME)
-        const robots = await collection.find({}).toArray()
-
-        const reviewsCollection = await dbService.getCollection('review')
-        const reviews = await reviewsCollection.find({}).toArray()
-
-        const statisticData = {
-            length: robots.length || 0,
-            mostExpensive: { price: -Infinity },
-            leastExpensive: { price: Infinity },
-            labelMap: {}, //totalPrice: 0, totalInStock, count: 0
-            highestRate: { robot: {}, avgRate: 0 }
-        }
-
-        robots.reduce((acc, robot) => {
-            if (robot.price > acc.mostExpensive.price) acc.mostExpensive = robot
-            if (robot.price < acc.leastExpensive.price) acc.leastExpensive = robot
-
-
-            //labels
-            robot.labels.forEach(label => {
-                if (acc.labelMap[label]) {
-                    const currLabelData = acc.labelMap[label]
-                    currLabelData.totalPrice += +robot.price
-                    if (robot.inStock) currLabelData.totalInStock++
-                    currLabelData.count++
-                } else {
-                    const currLabelData = { totalPrice: +robot.price, count: 1 }
-
-                    if (robot.inStock) currLabelData.totalInStock = 1
-                    else currLabelData.totalInStock = 0 //so in the next round we can do property++
-
-                    acc.labelMap[label] = currLabelData
-                }
-            })
-
-            //rate
-            const totalRateData = { totalRate: 0, count: 0 }
-
-            for (let i = reviews.length - 1; i >= 0; i--) {
-                const review = reviews[i]
-                if (ObjectId(review.robotId).toString() !== ObjectId(robot._id).toString()) continue
-
-                totalRateData.totalRate += +review.rate
-                totalRateData.count++
-
-                reviews.splice(i, 1) //we splice to make the array shorter (less loops)
-            }
-
-            const robotRateAvg = totalRateData.totalRate / totalRateData.count
-
-            if (robotRateAvg > acc.highestRate.avgRate) acc.highestRate = { robot, avgRate: robotRateAvg }
-
-            return acc
-        }, statisticData)
-
-
-        //labels - calculating averages
-        for (const key of Object.keys(statisticData.labelMap)) {
-            const label = statisticData.labelMap[key]
-            label.avgPricePerType = label.totalPrice / label.count
-            label.inStockPercentage = label.totalInStock / label.count * 100
-            delete label.totalPrice
-            delete label.totalInStock
-            delete label.count
-        }
-
-        return statisticData
-    } catch (err) {
-        console.log(`ERROR: cannot get statistic data of robots (robot.service - getStatistics)`)
+        console.log(`ERROR: cannot delete user (user.service - remove)`)
         console.log('err', err)
         throw err
     }
