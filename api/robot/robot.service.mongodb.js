@@ -42,7 +42,8 @@ async function query(filterBy) {
     }
 
     if (owner) {
-        criteria['owner._id'] = ObjectId(JSON.parse(owner)._id)
+        criteria['owner._id'] = ObjectId(owner._id)
+        // criteria['owner._id'] = ObjectId(JSON.parse(owner)._id)
     }
 
     try {
@@ -51,13 +52,6 @@ async function query(filterBy) {
         if (sortBy) robots.collation({ locale: 'en' }).sort({ [sortBy]: 1 }) //collation make it case insensitive
 
         robots = await robots.toArray()
-
-        /* Since I created fake createdAt times, I don't use these lines. It's here as a reference  */
-        // toys = toys.map(toy => {
-        //     toy.createdAt = ObjectId(toy._id).getTimestamp()
-        //     return toy
-        // })
-
 
         let pageIdx = +filterBy.pageIdx
         const numOfPages = Math.ceil(robots.length / PAGE_SIZE)

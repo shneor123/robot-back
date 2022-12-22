@@ -7,7 +7,7 @@ module.exports = {
     addUser,
     updateUser,
     updateUserAdmin,
-    removeUser
+    removeUser,
 }
 
 async function getUsers(req, res) {

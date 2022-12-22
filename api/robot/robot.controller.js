@@ -47,7 +47,7 @@ async function getRobotById(req, res) {
 
 async function addRobot(req, res) {
     try {
-        const robot = req.body        
+        const robot = req.body
         const savedRobot = await robotService.add(robot)
         if (!savedRobot) return res.status(401).send('Failed to add robot')
         res.send(savedRobot)
