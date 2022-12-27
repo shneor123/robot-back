@@ -1,6 +1,6 @@
 {
   "files": {
-    "main.css": "/static/css/main.9273bd3c.css",
+    "main.css": "/static/css/main.79e98a7a.css",
     "main.js": "/static/js/main.08c324b4.js",
     "static/media/Lobster-Regular.ttf": "/static/media/Lobster-Regular.03c38496322925fec242.ttf",
     "static/media/do.svg": "/static/media/do.d2287a1e1eee0805fc27.svg",
@@ -281,11 +281,11 @@
     "static/media/de.svg": "/static/media/de.6435bf24d148ca7248e7.svg",
     "static/media/bd.svg": "/static/media/bd.0ad8c443ef4d47ea0497.svg",
     "static/media/id.svg": "/static/media/id.f624e2c8444a7794b357.svg",
-    "main.9273bd3c.css.map": "/static/css/main.9273bd3c.css.map",
+    "main.79e98a7a.css.map": "/static/css/main.79e98a7a.css.map",
     "main.08c324b4.js.map": "/static/js/main.08c324b4.js.map"
   },
   "entrypoints": [
-    "static/css/main.9273bd3c.css",
+    "static/css/main.79e98a7a.css",
     "static/js/main.08c324b4.js"
   ]
 }
